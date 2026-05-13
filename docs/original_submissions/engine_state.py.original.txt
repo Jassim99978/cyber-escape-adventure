@@ -1,0 +1,7 @@
+class GameState:
+    def __init__(self):
+        self.location = "start"
+        self.inventory = []
+        self.health = 100
+        self.flags = {}
+        self.game_over = False

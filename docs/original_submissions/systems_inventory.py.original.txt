@@ -1,0 +1,16 @@
+def add_item(state, item):
+	if item not in state.inventory:
+		state.inventory.append(item)
+		print("You collected: {item}")
+		
+def show_inventory(state):
+	print("\nInventory:")
+	
+	if len(state.inventory) == 0:
+		print("Inventory empty.")
+	else:
+		for item in state.inventory:
+			print("-", item)
+			
+def has_item(state, item):
+	return item in state.inventory

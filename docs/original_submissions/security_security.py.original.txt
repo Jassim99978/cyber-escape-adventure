@@ -1,0 +1,8 @@
+import datetime
+
+def log_event(event):
+	timestamp = datetime.datetime.now().strftime(""%Y-%m-%d %H:%M:%S")
+	
+	file = open("audit_log.txt", "a")
+	file.write(f"{timestamp} - {event}\n")
+	file.close

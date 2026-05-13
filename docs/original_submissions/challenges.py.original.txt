@@ -1,0 +1,67 @@
+
+def log_event(event):
+    print(event)
+
+
+def password_challenge(state):
+
+    print("\n=== PASSWORD CHALLENGE ===")
+
+    password = input("Enter server password: ").strip()
+
+    if password == "":
+        print("Invalid input.")
+        log_event("PASSWORD_INVALID_INPUT")
+
+    elif password == "cyber123":
+        print("Access Granted.")
+        state.flags["server_access"] = True
+        log_event("PASSWORD_CHALLENGE_SUCCESS")
+
+    else:
+        print("Access Denied.")
+        state.health -= 10
+        log_event("PASSWORD_CHALLENGE_FAIL")
+
+
+def drone_challenge(state):
+
+    print("\n=== SECURITY DRONE ===")
+
+    print("1. Hide")
+    print("2. Fight")
+    print("3. Run")
+
+    choice = input("Choose option: ").strip()
+
+    if choice == "1":
+        print("You hid successfully.")
+        log_event("DRONE_HIDE_SUCCESS")
+
+    elif choice == "2":
+        print("Drone attacked you.")
+        state.health -= 20
+        log_event("DRONE_FIGHT_FAIL")
+
+    elif choice == "3":
+        print("You escaped safely.")
+        log_event("DRONE_ESCAPE_SUCCESS")
+
+    else:
+        print("Invalid option.")
+        log_event("DRONE_INVALID_INPUT")
+
+
+class TestState:
+    def __init__(self):
+        self.flags = {}
+        self.health = 100
+
+
+state = TestState()
+
+password_challenge(state)
+drone_challenge(state)
+
+print("\nPlayer Health:", state.health)
+print("Flags:", state.flags)

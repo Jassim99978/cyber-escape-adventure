@@ -1,0 +1,178 @@
+# =========================
+# STORY SYSTEM
+# File: content/story.py
+# =========================
+
+story = {
+
+    "start": {
+        "text": "You wake up inside an abandoned cyber laboratory.",
+
+        "choices": {
+            "1": {
+                "description": "Open the metal door",
+                "next_scene": "hallway"
+            },
+
+            "2": {
+                "description": "Search the room",
+                "next_scene": "storage_room"
+            }
+        }
+    },
+
+    "hallway": {
+        "text": "A dark hallway stretches ahead.",
+
+        "choices": {
+            "1": {
+                "description": "Talk to the engineer",
+                "next_scene": "engineer_room"
+            },
+
+            "2": {
+                "description": "Enter security room",
+                "next_scene": "security_room"
+            }
+        }
+    }
+}
+
+
+# =========================
+# INVENTORY SYSTEM
+# File: systems/inventory.py
+# =========================
+
+def add_item(state, item):
+
+    if item not in state.inventory:
+
+        state.inventory.append(item)
+
+        print(f"You collected: {item}")
+
+    else:
+
+        print(f"{item} is already in your inventory.")
+
+
+def remove_item(state, item):
+
+    if item in state.inventory:
+
+        state.inventory.remove(item)
+
+        print(f"{item} removed from inventory.")
+
+    else:
+
+        print("Item not found.")
+
+
+def show_inventory(state):
+
+    print("\n===== INVENTORY =====")
+
+    if len(state.inventory) == 0:
+
+        print("Inventory empty.")
+
+    else:
+
+        for item in state.inventory:
+
+            print("-", item)
+
+    print("=====================")
+
+
+def has_item(state, item):
+
+    return item in state.inventory
+
+
+def use_item(state, item):
+
+    if item not in state.inventory:
+
+        print("Item not found.")
+        return
+
+    if item == "medkit":
+
+        state.health += 25
+
+        if state.health > 100:
+            state.health = 100
+
+        print("You used a medkit.")
+        print(f"Health: {state.health}")
+
+        remove_item(state, item)
+
+    elif item == "keycard":
+
+        print("The keycard unlocks secure doors.")
+
+    else:
+
+        print("Nothing happens.")
+
+
+# =========================
+# NPC SYSTEM
+# File: content/npcs.py
+# =========================
+
+def engineer_npc(state):
+
+    print("Engineer: You're alive?")
+
+    print("\n1. Ask for supplies")
+    print("2. Leave")
+
+    choice = input("> ")
+
+    if choice == "1":
+
+        print("\nEngineer: Take this access chip.")
+
+        add_item(state, "access chip")
+
+        state.flags["helped_engineer"] = True
+
+    elif choice == "2":
+
+        print("\nYou leave the engineer behind.")
+
+    else:
+
+        print("\nInvalid choice.")
+
+
+# =========================
+# GAME STATE
+# =========================
+
+class GameState:
+
+    def __init__(self):
+
+        self.location = "start"
+        self.inventory = []
+        self.health = 100
+        self.flags = {}
+
+
+# =========================
+# SIMPLE TEST
+# =========================
+
+if __name__ == "__main__":
+
+    state = GameState()
+
+    engineer_npc(state)
+
+    show_inventory(state)

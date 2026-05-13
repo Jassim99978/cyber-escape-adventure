@@ -1,0 +1,509 @@
+"""
+Role 2 - Story + Gameplay Systems
+Compatible with Python 3.14.3
+
+Includes:
+- Story system with branching paths
+- 5+ locations/events
+- 5 NPCs
+- Inventory system
+- Multiple endings
+- Item effects
+"""
+
+# =========================
+# GAME STATE
+# =========================
+
+class GameState:
+
+    def __init__(self):
+
+        self.location = "start"
+        self.inventory = []
+        self.health = 100
+        self.flags = {}
+        self.game_over = False
+
+
+# =========================
+# INVENTORY SYSTEM
+# =========================
+
+def add_item(state, item):
+
+    if item not in state.inventory:
+
+        state.inventory.append(item)
+
+        print(f"\nYou collected: {item}")
+
+    else:
+
+        print(f"\n{item} is already in your inventory.")
+
+
+def remove_item(state, item):
+
+    if item in state.inventory:
+
+        state.inventory.remove(item)
+
+        print(f"\n{item} removed from inventory.")
+
+    else:
+
+        print("\nItem not found.")
+
+
+def has_item(state, item):
+
+    return item in state.inventory
+
+
+def show_inventory(state):
+
+    print("\n===== INVENTORY =====")
+
+    if len(state.inventory) == 0:
+
+        print("Inventory empty.")
+
+    else:
+
+        for item in state.inventory:
+
+            print("-", item)
+
+    print("=====================")
+
+
+def use_item(state, item):
+
+    if item not in state.inventory:
+
+        print("\nItem not found.")
+        return
+
+    if item == "medkit":
+
+        state.health += 25
+
+        if state.health > 100:
+            state.health = 100
+
+        print("\nYou used a medkit.")
+        print(f"Health: {state.health}")
+
+        remove_item(state, item)
+
+    elif item == "energy drink":
+
+        state.health += 10
+
+        if state.health > 100:
+            state.health = 100
+
+        print("\nYou feel energized.")
+        print(f"Health: {state.health}")
+
+        remove_item(state, item)
+
+    elif item == "keycard":
+
+        print("\nThe keycard unlocks secure doors.")
+
+    elif item == "access chip":
+
+        print("\nThis chip grants access to restricted systems.")
+
+    elif item == "battery":
+
+        print("\nThe battery powers nearby electronics.")
+
+    else:
+
+        print("\nNothing happens.")
+
+
+# =========================
+# NPC SYSTEM
+# =========================
+
+def engineer_npc(state):
+
+    print("\nEngineer: You're alive? I thought the drones eliminated everyone.")
+
+    print("\n1. Ask what happened")
+    print("2. Ask for supplies")
+    print("3. Leave")
+
+    choice = input("> ")
+
+    if choice == "1":
+
+        print("\nEngineer: The facility AI went rogue after the power surge.")
+
+        state.flags["learned_truth"] = True
+
+    elif choice == "2":
+
+        print("\nEngineer: Take this access chip.")
+
+        add_item(state, "access chip")
+
+        state.flags["helped_engineer"] = True
+
+    elif choice == "3":
+
+        print("\nYou leave the engineer behind.")
+
+    else:
+
+        print("\nInvalid choice.")
+
+
+def scientist_npc(state):
+
+    print("\nScientist: Please help me escape this lab!")
+
+    print("\n1. Help scientist")
+    print("2. Ignore scientist")
+
+    choice = input("> ")
+
+    if choice == "1":
+
+        print("\nScientist: Thank you. Take this hidden code.")
+
+        add_item(state, "hidden code")
+
+        state.flags["helped_scientist"] = True
+
+    else:
+
+        print("\nYou walk away.")
+
+
+def merchant_npc(state):
+
+    print("\nMerchant: I trade supplies.")
+
+    print("\n1. Trade battery for medkit")
+    print("2. Leave")
+
+    choice = input("> ")
+
+    if choice == "1":
+
+        if has_item(state, "battery"):
+
+            remove_item(state, "battery")
+            add_item(state, "medkit")
+
+            print("\nTrade completed.")
+
+        else:
+
+            print("\nYou do not have a battery.")
+
+    else:
+
+        print("\nYou leave the merchant.")
+
+
+def guard_npc(state):
+
+    print("\nGuard: Access to the server room is restricted.")
+
+    print("\n1. Show keycard")
+    print("2. Leave")
+
+    choice = input("> ")
+
+    if choice == "1":
+
+        if has_item(state, "keycard"):
+
+            print("\nGuard: Access granted.")
+
+            state.flags["server_access"] = True
+
+        else:
+
+            print("\nGuard: You don't have authorization.")
+
+    else:
+
+        print("\nYou leave.")
+
+
+def medic_npc(state):
+
+    print("\nMedic: You look injured.")
+
+    print("\n1. Receive treatment")
+    print("2. Leave")
+
+    choice = input("> ")
+
+    if choice == "1":
+
+        state.health += 20
+
+        if state.health > 100:
+            state.health = 100
+
+        print(f"\nHealth restored to {state.health}")
+
+    else:
+
+        print("\nYou leave the medic.")
+
+
+# =========================
+# STORY SYSTEM
+# =========================
+
+story = {
+
+    "start": {
+        "text": "You wake up inside a locked research facility. Emergency lights flash across the walls.",
+
+        "choices": {
+            "1": {
+                "description": "Search storage room",
+                "next_scene": "storage_room"
+            },
+
+            "2": {
+                "description": "Go to hallway",
+                "next_scene": "hallway"
+            },
+
+            "3": {
+                "description": "Follow a voice calling for help",
+                "next_scene": "scientist_room"
+            }
+        }
+    },
+
+    "storage_room": {
+        "text": "You search dusty storage crates and discover useful supplies.",
+
+        "reward": ["medkit", "keycard", "battery"],
+
+        "choices": {
+            "1": {
+                "description": "Return to hallway",
+                "next_scene": "hallway"
+            }
+        }
+    },
+
+    "hallway": {
+        "text": "A dark hallway stretches through the facility.",
+
+        "choices": {
+            "1": {
+                "description": "Visit engineer",
+                "next_scene": "engineer_room"
+            },
+
+            "2": {
+                "description": "Visit merchant",
+                "next_scene": "merchant_room"
+            },
+
+            "3": {
+                "description": "Enter security checkpoint",
+                "next_scene": "security_room"
+            }
+        }
+    },
+
+    "scientist_room": {
+        "text": "A trapped scientist calls for help behind a collapsed doorway.",
+
+        "choices": {
+            "1": {
+                "description": "Help scientist",
+                "next_scene": "maintenance_tunnel"
+            },
+
+            "2": {
+                "description": "Ignore scientist",
+                "next_scene": "hallway"
+            }
+        }
+    },
+
+    "maintenance_tunnel": {
+        "text": "The scientist reveals a hidden maintenance tunnel.",
+
+        "choices": {
+            "1": {
+                "description": "Escape through tunnel",
+                "next_scene": "ending_scientist"
+            }
+        }
+    },
+
+    "engineer_room": {
+        "text": "An engineer studies broken security systems.",
+
+        "choices": {
+            "1": {
+                "description": "Talk to engineer",
+                "next_scene": "hallway"
+            }
+        }
+    },
+
+    "merchant_room": {
+        "text": "A merchant hides behind supply crates.",
+
+        "choices": {
+            "1": {
+                "description": "Trade supplies",
+                "next_scene": "hallway"
+            }
+        }
+    },
+
+    "security_room": {
+        "text": "A guarded security checkpoint blocks the exit.",
+
+        "choices": {
+            "1": {
+                "description": "Use keycard",
+                "next_scene": "server_room"
+            },
+
+            "2": {
+                "description": "Return to hallway",
+                "next_scene": "hallway"
+            }
+        }
+    },
+
+    "server_room": {
+        "text": "Rows of servers control the entire facility.",
+
+        "choices": {
+            "1": {
+                "description": "Hack terminal",
+                "next_scene": "ending_hacker"
+            },
+
+            "2": {
+                "description": "Destroy servers",
+                "next_scene": "ending_destroy"
+            }
+        }
+    },
+
+    "ending_hacker": {
+        "text": "You disable the facility alarms and escape through the security gate.",
+
+        "choices": {}
+    },
+
+    "ending_destroy": {
+        "text": "You destroy the servers, but the facility begins collapsing around you.",
+
+        "choices": {}
+    },
+
+    "ending_scientist": {
+        "text": "You and the scientist escape through the maintenance tunnel safely.",
+
+        "choices": {}
+    }
+}
+
+
+# =========================
+# GAME FUNCTIONS
+# =========================
+
+def play_scene(state):
+
+    current_scene = story[state.location]
+
+    print("\n" + current_scene["text"])
+
+    if "reward" in current_scene:
+
+        for item in current_scene["reward"]:
+
+            if item not in state.inventory:
+
+                add_item(state, item)
+
+    if state.location == "engineer_room":
+        engineer_npc(state)
+
+    elif state.location == "scientist_room":
+        scientist_npc(state)
+
+    elif state.location == "merchant_room":
+        merchant_npc(state)
+
+    elif state.location == "security_room":
+        guard_npc(state)
+
+    elif state.location == "maintenance_tunnel":
+        medic_npc(state)
+
+    if len(current_scene["choices"]) == 0:
+
+        print("\n===== GAME OVER =====")
+        state.game_over = True
+        return
+
+    print("\nWhat would you like to do?\n")
+
+    for number, choice in current_scene["choices"].items():
+
+        print(f"{number}. {choice['description']}")
+
+    print("I. View Inventory")
+
+    player_choice = input("\nEnter choice: ").strip()
+
+    if player_choice.upper() == "I":
+
+        show_inventory(state)
+        return
+
+    if player_choice in current_scene["choices"]:
+
+        next_scene = current_scene["choices"][player_choice]["next_scene"]
+
+        state.location = next_scene
+
+    else:
+
+        print("\nInvalid choice.")
+
+
+# =========================
+# MAIN GAME LOOP
+# =========================
+
+def main():
+
+    state = GameState()
+
+    print("===== CYBER ESCAPE =====")
+    print("Escape the research facility and survive.\n")
+
+    while not state.game_over:
+
+        play_scene(state)
+
+
+if __name__ == "__main__":
+
+    main()

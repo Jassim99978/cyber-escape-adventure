@@ -1,0 +1,55 @@
+import json
+import hashlib
+from security.security import log_event
+
+def create_hash(data):
+	json_data=json.dumps(data, sort_keys=True)
+	return hashlib.sha256(json_data.encode()).hexdigest()
+
+def save_game(state):
+	data = {
+		"location": state.location,
+		"inventory": state.inventory,
+		"health": state.health,
+		"flags": state.flags
+	}
+	
+	save_data = {
+		"game": data,
+		"hash": create_hash(data)
+	}
+	
+	file = open("savegame.json", "w")
+	json.dump(save_data, file, indent=4)
+	file.close()
+	
+	log_event("SAVE ATTEMPT - SUCCESS")
+	print("Game saved.")
+	
+def load_game(state):
+	try:
+		file = open("savegame.json", "r")
+		save_data = json.load(file)
+		file.close()
+		
+		saved_hash = save_data["hash"]
+		data = save_data["game"]
+		
+		new_hash = create_hash(data)
+		
+		if saved_hash != new_hash:
+			print("Tampered saved detected.")
+			log_event("LOAD_ATTEMPT - FAIL - SAVE_TAMPERED")
+			return
+		
+		state.location = data{"location"}
+		state.inventory = data{"inventory"}
+		state.health = data{"health"}
+		state.flags = data{"flags"}
+		
+		log_event("LOAD_ATTEMPT - SUCCESS")
+		print("Game loaded.")
+		
+	except:
+		print("No save file found.")
+		log_event("LOAD_ATTEMPT - FAIL")

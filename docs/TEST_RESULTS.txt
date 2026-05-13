@@ -1,0 +1,18 @@
+Cyber Escape Adventure - Final Test Results
+
+Checked against Group Project: Text-Based Adventure Game PDF.
+
+Automated tests completed:
+- python -m compileall . -> PASSED
+- Hacker ending gameplay path -> PASSED
+- Destroy ending gameplay path -> PASSED
+- Scientist escape ending gameplay path -> PASSED
+- Save game creation -> PASSED
+- Load saved game -> PASSED
+- Save tamper detection -> PASSED
+- audit_log.txt writing from project folder -> PASSED
+- README.md checklist present -> PASSED
+- docs/flowchart.png present -> PASSED
+
+Important note:
+GitHub collaboration evidence cannot be created inside the zip file. The actual GitHub repository still needs PRs, commits, reviews, issues, and a v1.0 release/final commit as required by the PDF.
